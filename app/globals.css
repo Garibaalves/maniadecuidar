@@ -1,26 +1,45 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7d1ca;
+  --foreground: #5c3129;
+  --muted: #eac0b6;
+  --muted-foreground: #5c3129;
+  --card: #ffffff;
+  --card-foreground: #5c3129;
+  --border: #e7b6ac;
+  --input: #e7b6ac;
+  --ring: #a4222e;
+  --primary: #a4222e;
+  --primary-foreground: #f7d1ca;
+  --secondary: #5c3129;
+  --secondary-foreground: #f7d1ca;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  @apply border-border;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-background text-foreground antialiased;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  background-image: radial-gradient(circle at 20% 20%, #ffe0d9 0, transparent 40%),
+    radial-gradient(circle at 80% 10%, #f7d1ca 0, transparent 32%),
+    radial-gradient(circle at 10% 70%, rgba(164, 34, 46, 0.08) 0, transparent 35%),
+    radial-gradient(circle at 90% 80%, rgba(92, 49, 41, 0.08) 0, transparent 30%);
+  background-attachment: fixed;
+}
+
+a {
+  @apply text-primary underline-offset-4 transition-colors hover:text-primary/80;
+}
+
+.glass-card {
+  @apply rounded-xl border border-white/60 bg-white/80 shadow-soft backdrop-blur;
+}
+
+.pill {
+  @apply inline-flex items-center gap-2 rounded-full bg-brand-primary/10 px-3 py-1 text-sm text-brand-deep;
 }
