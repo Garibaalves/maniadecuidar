@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error(error);
     const status = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json({ error: "Erro ao listar serviços" }, { status });
+    return NextResponse.json({ error: "Erro ao listar servicos" }, { status });
   }
 }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const parsed = servicoSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
+        { error: "Dados invalidos", details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(error);
     const status = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json({ error: "Erro ao criar serviço" }, { status });
+    return NextResponse.json({ error: "Erro ao criar servico" }, { status });
   }
 }
 
@@ -62,7 +62,7 @@ export async function PATCH(request: NextRequest) {
     const parsed = servicoUpdateSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
+        { error: "Dados invalidos", details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -79,6 +79,25 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error(error);
     const status = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json({ error: "Erro ao atualizar serviço" }, { status });
+    return NextResponse.json({ error: "Erro ao atualizar servico" }, { status });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    requireApiAuth(request);
+    const body = await request.json();
+    const id = body?.id as string | undefined;
+    if (!id) {
+      return NextResponse.json({ error: "ID obrigatorio" }, { status: 400 });
+    }
+    const supabase = getAdminClient();
+    const { error } = await supabase.from("servicos").delete().eq("id", id);
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    const status = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
+    return NextResponse.json({ error: "Erro ao excluir servico" }, { status });
   }
 }

@@ -47,6 +47,69 @@ const fadeUp: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
+const stagger: Variants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.12, delayChildren: 0.08 },
+  },
+};
+
+const itemFade: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, ease: [0.25, 1, 0.5, 1] },
+  },
+};
+
+const petImages = [
+  "/images/image1.jpeg",
+  "/images/image2.jpeg",
+  "/images/image3.jpeg",
+  "/images/image4.jpeg",
+  "/images/image5.jpeg",
+  "/images/image6.jpeg",
+  "/images/image7.jpeg",
+  "/images/image8.jpeg",
+  "/images/image9.jpeg",
+  "/images/image10.jpeg",
+  "/images/image11.jpeg",
+  "/images/image12.jpeg",
+  "/images/image13.jpeg",
+  "/images/image14.jpeg",
+  "/images/2image8.jpeg",
+] as const;
+
+const collageFrames = [
+  { top: "6%", left: "5%", width: "56%", height: "78%", rotate: "-3deg", z: 30 },
+  { top: "14%", left: "42%", width: "46%", height: "72%", rotate: "2deg", z: 40 },
+  { top: "44%", left: "8%", width: "48%", height: "58%", rotate: "1deg", z: 35 },
+  { top: "10%", left: "18%", width: "50%", height: "80%", rotate: "-8deg", z: 20 },
+] as const;
+
+const shuffleArray = <T,>(list: readonly T[]) => {
+  const copy = [...list];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
+const pickRandomImages = (count: number) => shuffleArray(petImages).slice(0, count);
+
+function useRandomImages(count: number) {
+  const [images, setImages] = useState(() => petImages.slice(0, Math.min(count, petImages.length)));
+
+  useEffect(() => {
+    setImages(pickRandomImages(count));
+  }, [count]);
+
+  return images;
+}
+
 export function Navbar() {
   const [open, setOpen] = useState(false);
 
@@ -111,10 +174,13 @@ export function Navbar() {
 }
 
 export function Hero() {
+  const heroPetImages = useRandomImages(4);
+  const heroFrames = collageFrames;
+
   return (
     <motion.section
       id="inicio"
-      className="relative overflow-hidden bg-brand-soft/90 pb-20 pt-28 sm:pt-32"
+      className="relative scroll-mt-32 overflow-hidden bg-brand-soft/90 pb-20 pt-28 sm:scroll-mt-36 sm:pt-32"
       variants={fadeUp}
       initial="hidden"
       whileInView="visible"
@@ -122,32 +188,41 @@ export function Hero() {
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(164,34,46,0.12),_transparent_45%),_radial-gradient(circle_at_bottom_right,_rgba(92,49,41,0.12),_transparent_45%)]" />
       <div className="container relative grid items-center gap-10 lg:grid-cols-2">
-        <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-deep shadow-sm">
+        <motion.div
+          className="space-y-6"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.35 }}
+        >
+          <motion.div
+            className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-deep shadow-sm"
+            variants={itemFade}
+          >
             Desde 2016 · Estética Animal
-          </div>
-          <h1 className="font-display text-4xl leading-tight text-brand-deep sm:text-5xl">
+          </motion.div>
+          <motion.h1 className="font-display text-4xl leading-tight text-brand-deep sm:text-5xl" variants={itemFade}>
             Cuidar é a nossa mania.
-          </h1>
-          <p className="text-lg text-foreground/80 sm:text-xl">
+          </motion.h1>
+          <motion.p className="text-lg text-foreground/80 sm:text-xl" variants={itemFade}>
             Banho, tosa e estética animal com carinho, segurança e amor pelos pets desde 2016.
             Transformamos cada visita em uma experiência acolhedora e cheia de cuidado.
-          </p>
-          <ul className="space-y-3 text-brand-deep/90">
+          </motion.p>
+          <motion.ul className="space-y-3 text-brand-deep/90" variants={itemFade}>
             {[
               { icon: ShieldCheck, text: "Profissionais especializados e apaixonados por pets" },
               { icon: Sparkles, text: "Ambiente higienizado, seguro e climatizado" },
               { icon: Scissors, text: "Banho & tosa personalizados para cada necessidade" },
             ].map((item) => (
-              <li key={item.text} className="flex items-center gap-3">
+              <motion.li key={item.text} className="flex items-center gap-3" variants={itemFade}>
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-brand-primary shadow-sm">
                   <item.icon className="h-5 w-5" />
                 </span>
                 <span>{item.text}</span>
-              </li>
+              </motion.li>
             ))}
-          </ul>
-          <div className="flex flex-wrap gap-3">
+          </motion.ul>
+          <motion.div className="flex flex-wrap gap-3" variants={itemFade}>
             <Button asChild>
               <a href="#contato">Agendar agora</a>
             </Button>
@@ -157,36 +232,46 @@ export function Hero() {
             <Button variant="ghost" asChild>
               <Link href="/meus-agendamentos">Consultar agendamentos</Link>
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         <div className="relative">
           <div className="absolute -left-6 -top-6 h-28 w-28 rounded-full bg-brand-primary/10 blur-2xl" />
           <div className="absolute -right-8 bottom-10 h-28 w-28 rounded-full bg-brand-deep/10 blur-2xl" />
           <Card className="relative overflow-hidden border-brand-primary/30 bg-white/90 shadow-soft">
-            <CardHeader className="pb-3">
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary">
-                <Sparkles className="h-4 w-4" /> Experiência premium
-              </div>
-              <CardTitle className="text-2xl text-brand-deep">Banho & tosa com carinho</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="h-52 rounded-2xl bg-gradient-to-br from-brand-soft to-white bg-[length:200%_200%] p-4 shadow-inner">
-                <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-brand-primary/30 bg-white/60 text-brand-deep/80">
-                  Imagem dos pets em destaque
+            <div className="relative h-[340px] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-soft/80 via-white to-brand-soft/40">
+              {heroPetImages.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-brand-deep/70">
+                  Carregando fotos dos pets
                 </div>
-              </div>
-              <div className="flex items-center justify-between rounded-xl bg-brand-primary/10 px-4 py-3 text-sm text-brand-deep">
-                <div>
-                  <p className="font-semibold text-brand-primary">Desde 2016</p>
-                  <p className="text-xs text-brand-deep/70">Mais de 6.000 banhos realizados</p>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-brand-deep/80">
-                  <ShieldCheck className="h-5 w-5 text-brand-primary" />
-                  Atendimento humanizado
-                </div>
-              </div>
-            </CardContent>
+              ) : (
+                heroPetImages.slice(0, 4).map((src, idx) => (
+                  <div
+                    key={src}
+                    className="absolute overflow-hidden rounded-xl shadow-lg shadow-brand-primary/15"
+                    style={{
+                      top: heroFrames[idx]?.top,
+                      left: heroFrames[idx]?.left,
+                      width: heroFrames[idx]?.width,
+                      height: heroFrames[idx]?.height,
+                      zIndex: heroFrames[idx]?.z,
+                      transform: `rotate(${heroFrames[idx]?.rotate})`,
+                    }}
+                  >
+                    <Image
+                      src={src}
+                      alt="Pet atendido pela Mania de Cuidar"
+                      fill
+                      sizes="(min-width: 1024px) 520px, 100vw"
+                      className="object-cover"
+                      priority={idx === 0}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                    <div className="absolute inset-0 ring-2 ring-white/80" />
+                  </div>
+                ))
+              )}
+            </div>
           </Card>
         </div>
       </div>
@@ -223,19 +308,21 @@ export function ServicesSection() {
             Tudo o que seu pet precisa para ficar limpo, cheiroso e feliz.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}>
           {services.map((service) => (
-            <Card key={service.title} className="border-brand-primary/20 transition hover:-translate-y-1 hover:shadow-soft">
-              <CardHeader className="flex flex-row items-center gap-3 pb-2">
-                <div className="flex h-28 w-28 items-center justify-center rounded-2xl bg-brand-primary/15 text-brand-primary">
-                  <service.icon className="h-6 w-6" />
-                </div>
-                <CardTitle className="text-lg text-brand-deep">{service.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-foreground/70">{service.description}</CardContent>
-            </Card>
+            <motion.div key={service.title} variants={itemFade}>
+              <Card className="border-brand-primary/20 transition hover:-translate-y-1 hover:shadow-soft">
+                <CardHeader className="flex flex-row items-center gap-3 pb-2">
+                  <div className="flex h-28 w-28 items-center justify-center rounded-2xl bg-brand-primary/15 text-brand-primary">
+                    <service.icon className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg text-brand-deep">{service.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-foreground/70">{service.description}</CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
         <div className="text-center">
           <Button asChild>
             <a href="#contato">Ver todos os serviços</a>
@@ -269,25 +356,30 @@ export function DifferentialsSection() {
           </p>
           <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">Mania de Cuidar</h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}>
           {items.map((item) => (
-            <Card key={item.title} className="border-brand-primary/20 bg-white/80 shadow-soft">
-              <CardHeader className="flex flex-row items-center gap-3 pb-2">
-                <div className="flex h-28 w-28 items-center justify-center rounded-2xl bg-brand-primary/15 text-brand-primary">
-                  <item.icon className="h-6 w-6" />
-                </div>
-                <CardTitle className="text-lg text-brand-deep">{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-foreground/70">{item.text}</CardContent>
-            </Card>
+            <motion.div key={item.title} variants={itemFade}>
+              <Card className="border-brand-primary/20 bg-white/80 shadow-soft">
+                <CardHeader className="flex flex-row items-center gap-3 pb-2">
+                  <div className="flex h-28 w-28 items-center justify-center rounded-2xl bg-brand-primary/15 text-brand-primary">
+                    <item.icon className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg text-brand-deep">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-foreground/70">{item.text}</CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </motion.section>
   );
 }
 
 export function AboutSection() {
+  const aboutPetImages = useRandomImages(4);
+  const aboutFrames = collageFrames;
+
   return (
     <motion.section
       id="sobre"
@@ -298,21 +390,21 @@ export function AboutSection() {
       viewport={{ once: true, amount: 0.2 }}
     >
       <div className="container grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="space-y-4">
+        <motion.div className="space-y-4" variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.25 }}>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-deep/70">
             Sobre nós
           </p>
-          <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">Mania de Cuidar</h2>
-          <p className="text-base text-foreground/80">
+          <motion.h2 className="font-display text-3xl text-brand-deep sm:text-4xl" variants={itemFade}>Mania de Cuidar</motion.h2>
+          <motion.p className="text-base text-foreground/80" variants={itemFade}>
             Desde 2016, oferecemos serviços de estética animal com carinho, segurança e atenção aos
             detalhes. Tratamos cada pet como membro da nossa família, garantindo uma experiência
             acolhedora e confiante.
-          </p>
-          <p className="text-base text-foreground/80">
+          </motion.p>
+          <motion.p className="text-base text-foreground/80" variants={itemFade}>
             Nossa equipe é apaixonada por animais e busca sempre o bem-estar, a higiene e a
             tranquilidade do seu pet, do check-in ao retorno para casa.
-          </p>
-          <div className="grid grid-cols-2 gap-4">
+          </motion.p>
+          <motion.div className="grid grid-cols-2 gap-4" variants={itemFade}>
             <Card className="border-brand-primary/20 bg-brand-primary/10 text-brand-deep">
               <CardContent className="space-y-1 p-4">
                 <p className="text-3xl font-bold text-brand-primary">+8 anos</p>
@@ -325,21 +417,51 @@ export function AboutSection() {
                 <p className="text-sm text-brand-deep/80">banhos e tosas realizados</p>
               </CardContent>
             </Card>
-          </div>
-        </div>
-        <Card className="overflow-hidden border-brand-primary/25 bg-brand-soft/70 shadow-soft">
-          <CardContent className="space-y-4 p-6">
-            <div className="h-52 rounded-2xl bg-gradient-to-br from-brand-primary/15 via-white to-brand-soft/80 p-4">
-              <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-brand-primary/30 text-brand-deep/80">
-                Espaço para foto da equipe e pets
+          </motion.div>
+        </motion.div>
+        <motion.div variants={itemFade} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.25 }}>
+          <Card className="overflow-hidden border-brand-primary/25 bg-brand-soft/70 shadow-soft">
+            <CardContent className="space-y-4 p-6">
+              <div className="relative h-[300px] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand-primary/15 via-white to-brand-soft/80">
+                {aboutPetImages.length === 0 ? (
+                  <div className="flex h-full items-center justify-center text-brand-deep/70">
+                    Carregando fotos dos pets
+                  </div>
+                ) : (
+                  aboutPetImages.slice(0, 4).map((src, idx) => (
+                    <div
+                      key={src}
+                      className="absolute overflow-hidden rounded-xl shadow-lg shadow-brand-primary/15"
+                      style={{
+                        top: aboutFrames[idx]?.top,
+                        left: aboutFrames[idx]?.left,
+                        width: aboutFrames[idx]?.width,
+                        height: aboutFrames[idx]?.height,
+                        zIndex: aboutFrames[idx]?.z,
+                        transform: `rotate(${aboutFrames[idx]?.rotate})`,
+                      }}
+                    >
+                      <Image
+                        src={src}
+                        alt="Equipe cuidando de um pet"
+                        fill
+                        sizes="(min-width: 1024px) 440px, 100vw"
+                        className="object-cover"
+                        priority={idx === 0}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                      <div className="absolute inset-0 ring-2 ring-white/80" />
+                    </div>
+                  ))
+                )}
               </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-xl bg-white/80 px-4 py-3 text-sm text-brand-deep">
-              <ShieldCheck className="h-5 w-5 text-brand-primary" />
-              Atendimento humanizado e seguro
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex items-center gap-3 rounded-xl bg-white/80 px-4 py-3 text-sm text-brand-deep">
+                <ShieldCheck className="h-5 w-5 text-brand-primary" />
+                Atendimento humanizado e seguro
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </motion.section>
   );
@@ -354,6 +476,7 @@ export function GallerySection() {
     "Antes & Depois",
     "Cuidado especial",
   ];
+  const galleryImages = useRandomImages(items.length);
   return (
     <motion.section
       id="galeria"
@@ -366,22 +489,32 @@ export function GallerySection() {
       <div className="container space-y-6">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-deep/70">
-            Antes & Depois
+            Nossos atendimentos
           </p>
           <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">
             Veja a transformação dos nossos clientes
           </h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {items.map((item) => (
-            <div
+        <motion.div className="grid gap-4 md:grid-cols-3" variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}>
+          {items.map((item, index) => (
+            <motion.div
               key={item}
-              className="flex h-52 items-center justify-center rounded-2xl border border-border/70 bg-gradient-to-br from-white via-brand-soft/80 to-white text-center text-sm font-medium text-brand-deep shadow-soft"
+              className="relative h-64 overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-white via-brand-soft/80 to-white text-center text-sm font-medium text-brand-deep shadow-soft"
+              variants={itemFade}
             >
-              {item}
-            </div>
+              {galleryImages[index] && (
+                <Image
+                  src={galleryImages[index]}
+                  alt={`Registro do pet: ${item}`}
+                  fill
+                  sizes="(min-width: 1024px) 360px, 100vw"
+                  className="object-cover"
+                  priority={index < 2}
+                />
+              )}
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </motion.section>
   );
@@ -651,7 +784,7 @@ export function ContactSection() {
           </p>
           <div className="space-y-2 text-sm text-brand-deep/80">
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-brand-primary" /> (31) 99999-9999
+              <Phone className="h-4 w-4 text-brand-primary" /> (31) 98316-6010
             </div>
             <div className="flex items-center gap-2">
               <Instagram className="h-4 w-4 text-brand-primary" /> @maniadecuidar.pet
@@ -669,7 +802,7 @@ export function ContactSection() {
               <div className="flex gap-2">
                     <Input
                       type="tel"
-                      placeholder="(31) 9 9999-9999"
+                      placeholder="(31) 9 8316-6010"
                       value={formatPhone(telefone)}
                       onChange={(e) => setTelefone(e.target.value)}
                 />
@@ -875,7 +1008,7 @@ export function LocationSection() {
           </p>
           <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">Onde estamos</h2>
           <p className="text-base text-foreground/80">
-            Rua do Pet Feliz, 123 - Centro, Conselheiro Lafaiete - MG
+            Rua Antonio Aureliano de Rezende, 1955 - Oscar Correia, Conselheiro Lafaiete - MG
           </p>
           <div className="flex items-center gap-2 text-sm text-brand-deep/80">
             <MapPin className="h-4 w-4 text-brand-primary" /> Fácil acesso, estacionamento próximo.
@@ -902,7 +1035,7 @@ export function LocationSection() {
           <div className="h-[320px] w-full">
             <iframe
               title="Mapa Mania de Cuidar"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3675.2200822985!2d-43.938!3d-22.902!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2zMjLCsDU0JzA3LjIiUyA0M8KwNTYnMTYuOCJX!5e0!3m2!1spt-BR!2sbr!4v00000000000"
+              src="https://www.google.com/maps?q=Rua+Antonio+Aureliano+de+Rezende,+1955,+Conselheiro+Lafaiete,+MG&z=17&output=embed&iwloc=0&hl=pt-BR"
               width="100%"
               height="100%"
               loading="lazy"
@@ -977,7 +1110,7 @@ export function Footer() {
           <p className="text-sm font-semibold">Links rápidos</p>
           <div className="flex flex-col gap-2 text-sm text-white/80">
             {navLinks.map((link) => (
-              <a key={link.href} href={link.href} className="hover:text-white">
+              <a key={link.href} href={link.href} className="text-white/80 hover:text-white">
                 {link.label}
               </a>
             ))}
@@ -986,10 +1119,10 @@ export function Footer() {
         <div className="space-y-3 text-sm text-white/80">
           <p className="font-semibold text-white">Contato</p>
           <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4" /> (31) 99999-9999
+            <Phone className="h-4 w-4" /> (31) 98316-6010
           </div>
           <div className="flex items-center gap-2">
-            <Instagram className="h-4 w-4" /> @maniadecuidar.pet
+            <Instagram className="h-4 w-4" /> @mania_de_cuidar
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4" /> Conselheiro Lafaiete - MG
@@ -997,7 +1130,11 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 py-4 text-center text-xs text-white/70">
-        © Mania de Cuidar – Estética Animal. Desde 2016. Todos os direitos reservados.
+        © Mania de Cuidar – Estética Animal. Desde 2016. Todos os direitos reservados.{" "}
+        Desenvolvido por:{" "}
+        <a href="https://www.codenow.com.br/" target="_blank" rel="noreferrer" className="underline text-white/80 hover:text-white">
+          Codenow soluções digitais LTDA
+        </a>
       </div>
     </footer>
   );
@@ -1023,12 +1160,3 @@ export function FloatingButtons() {
     </>
   );
 }
-
-
-
-
-
-
-
-
-

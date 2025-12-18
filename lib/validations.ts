@@ -36,6 +36,10 @@ export const animalSchema = z.object({
   observacoes: z.string().optional(),
 });
 
+export const animalUpdateSchema = animalSchema.extend({
+  id: z.string().uuid(),
+});
+
 export const servicoSchema = z.object({
   nome: z.string().min(2),
   descricao: z.string().optional(),

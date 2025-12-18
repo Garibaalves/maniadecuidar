@@ -88,3 +88,22 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Erro ao atualizar cliente" }, { status });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    requireApiAuth(request);
+    const body = await request.json();
+    const id = body?.id as string | undefined;
+    if (!id) {
+      return NextResponse.json({ error: "ID obrigatorio" }, { status: 400 });
+    }
+    const supabase = getAdminClient();
+    const { error } = await supabase.from("clientes").delete().eq("id", id);
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    const status = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
+    return NextResponse.json({ error: "Erro ao excluir cliente" }, { status });
+  }
+}
