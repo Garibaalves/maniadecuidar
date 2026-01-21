@@ -31,6 +31,7 @@ const initialFormState: FormState = {
   porte: "PEQUENO",
   sexo: "MACHO",
   especie: "Cachorro",
+  temperamento: "CALMO",
 };
 
 export default function AnimaisPage() {
@@ -107,6 +108,7 @@ export default function AnimaisPage() {
       nome: form.nome,
       especie: form.especie,
       porte: form.porte,
+      temperamento: form.temperamento,
       sexo: form.sexo,
       raca: form.raca,
       observacoes: form.observacoes,
@@ -140,6 +142,7 @@ export default function AnimaisPage() {
       cliente_id: animal.cliente_id,
       especie: animal.especie ?? "Cachorro",
       porte: animal.porte ?? "PEQUENO",
+      temperamento: animal.temperamento ?? "CALMO",
       sexo: animal.sexo ?? "MACHO",
     });
     setEditingId(animal.id);
@@ -211,6 +214,7 @@ export default function AnimaisPage() {
                 <TableHead>Cliente</TableHead>
                 <TableHead>Especie</TableHead>
                 <TableHead>Porte</TableHead>
+                <TableHead>Temperamento</TableHead>
                 <TableHead>Observacoes</TableHead>
                 <TableHead>Acoes</TableHead>
               </TableRow>
@@ -218,7 +222,7 @@ export default function AnimaisPage() {
             <TableBody>
               {loading && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-sm">
+                  <TableCell colSpan={7} className="text-center text-sm">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -235,6 +239,9 @@ export default function AnimaisPage() {
                       <TableCell>{animal.especie}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{animal.porte}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{animal.temperamento}</Badge>
                       </TableCell>
                       <TableCell className="text-sm text-foreground/70">
                         {animal.observacoes}
@@ -259,7 +266,7 @@ export default function AnimaisPage() {
               {!loading && !animaisFiltrados.length && (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="text-center text-sm text-foreground/70"
                   >
                     Nenhum animal encontrado.
@@ -362,6 +369,23 @@ export default function AnimaisPage() {
                 </Select>
               </div>
               <div className="space-y-2">
+                <Label>Temperamento</Label>
+                <Select
+                  value={form.temperamento ?? "CALMO"}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      temperamento: e.target.value as Animal["temperamento"],
+                    }))
+                  }
+                >
+                  <option value="CALMO">Calmo</option>
+                  <option value="AGITADO">Agitado</option>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
                 <Label>Data de nascimento</Label>
                 <Input
                   type="date"
@@ -374,16 +398,16 @@ export default function AnimaisPage() {
                   }
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Observacoes</Label>
-              <Input
-                placeholder="Observacoes"
-                value={form.observacoes ?? ""}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, observacoes: e.target.value }))
-                }
-              />
+              <div className="space-y-2">
+                <Label>Observacoes</Label>
+                <Input
+                  placeholder="Observacoes"
+                  value={form.observacoes ?? ""}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, observacoes: e.target.value }))
+                  }
+                />
+              </div>
             </div>
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

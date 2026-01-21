@@ -1,27 +1,67 @@
 "use client";
 
-import { navItems } from "@/config/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { PawPrint, Menu, LogOut, LayoutDashboard, Users, CalendarClock, Wallet, Boxes, Receipt, Sparkles, Stethoscope, Repeat, Link2 } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  LayoutDashboard,
+  PawPrint,
+  CalendarClock,
+  User,
+  Link2,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactElement, type ReactNode } from "react";
+import { useEffect, useState, type ReactElement, type ReactNode } from "react";
 
-type AppShellProps = {
+type NavItem = { href: string; label: string; icon: string };
+
+const clientNavItems: NavItem[] = [
+  { href: "/cliente", label: "Dashboard", icon: "layout-dashboard" },
+  { href: "/cliente/perfil", label: "Meu perfil", icon: "user" },
+  { href: "/cliente/pets", label: "Meus pets", icon: "paw-print" },
+  { href: "/cliente/agendamentos", label: "Agendamentos", icon: "calendar-clock" },
+  { href: "/cliente/agendar", label: "Novo agendamento", icon: "calendar-clock" },
+  { href: "/cliente/assinaturas", label: "Assinaturas", icon: "link" },
+];
+
+type ClientShellProps = {
   children: ReactNode;
-  userName?: string;
 };
 
-export function AppShell({ children, userName }: AppShellProps) {
+export function ClientShell({ children }: ClientShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [userName, setUserName] = useState<string>("Cliente");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cliente/me")
+      .then(async (res) => {
+        if (!res.ok) {
+          if (active) router.push("/cliente/login");
+          return null;
+        }
+        const data = await res.json();
+        return data.data;
+      })
+      .then((data) => {
+        if (active && data?.nome) setUserName(data.nome);
+      })
+      .catch(() => {
+        if (active) router.push("/cliente/login");
+      });
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    await fetch("/api/cliente/logout", { method: "POST" });
+    router.push("/cliente/login");
   };
 
   return (
@@ -44,7 +84,7 @@ export function AppShell({ children, userName }: AppShellProps) {
           </div>
         </div>
         <nav className="mt-8 space-y-1">
-          {navItems.map((item) => {
+          {clientNavItems.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
               <Link
@@ -64,16 +104,9 @@ export function AppShell({ children, userName }: AppShellProps) {
         <div className="mt-auto space-y-3 px-2">
           <div className="rounded-xl border border-border/70 bg-brand-primary/10 px-3 py-3">
             <p className="text-xs text-foreground/60">Bem-vindo,</p>
-            <p className="font-semibold text-brand-deep">
-              {userName ?? "Equipe"}
-            </p>
+            <p className="font-semibold text-brand-deep">{userName}</p>
           </div>
-          <Button
-            variant="outline"
-            size="md"
-            className="w-full"
-            onClick={handleLogout}
-          >
+          <Button variant="outline" size="md" className="w-full" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
             Sair
           </Button>
@@ -108,7 +141,7 @@ export function AppShell({ children, userName }: AppShellProps) {
         {open && (
           <div className="border-b border-border/70 bg-white px-4 py-3 lg:hidden">
             <nav className="space-y-1">
-              {navItems.map((item) => {
+              {clientNavItems.map((item) => {
                 const active = pathname.startsWith(item.href);
                 return (
                   <Link
@@ -138,17 +171,10 @@ export function AppShell({ children, userName }: AppShellProps) {
 function renderIcon(name: string) {
   const icons: Record<string, ReactElement> = {
     "layout-dashboard": <LayoutDashboard className="h-4 w-4" />,
-    users: <Users className="h-4 w-4" />,
     "paw-print": <PawPrint className="h-4 w-4" />,
-    sparkles: <Sparkles className="h-4 w-4" />,
-    stethoscope: <Stethoscope className="h-4 w-4" />,
     "calendar-clock": <CalendarClock className="h-4 w-4" />,
-    "wallet-cards": <Wallet className="h-4 w-4" />,
-    package: <Boxes className="h-4 w-4" />,
-    receipt: <Receipt className="h-4 w-4" />,
-    repeat: <Repeat className="h-4 w-4" />,
+    user: <User className="h-4 w-4" />,
     link: <Link2 className="h-4 w-4" />,
   };
-  return icons[name] ?? <PawPrint className="h-4 w-4" />;
+  return icons[name] ?? <LayoutDashboard className="h-4 w-4" />;
 }
-

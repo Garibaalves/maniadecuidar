@@ -1,48 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
 import { agendamentoSchema } from "@/lib/validations";
-import { requireApiAuth } from "@/lib/api";
+import { requireClientAuth } from "@/lib/api";
+
+const clienteAgendamentoSchema = agendamentoSchema.omit({ cliente_id: true });
 
 export async function GET(request: NextRequest) {
   try {
-    requireApiAuth(request);
+    const auth = requireClientAuth(request);
     const supabase = getAdminClient();
     const { searchParams } = new URL(request.url);
-    const data = searchParams.get("data");
     const status = searchParams.get("status");
 
     let query = supabase
       .from("agendamentos")
       .select(
-        "*, clientes(id, nome, telefone1), animais(id, nome), agendamento_servicos(servico_id, valor, servicos(id, nome, valor_padrao))"
+        "id, data, hora, status, observacoes, animais(id, nome), agendamento_servicos(servicos(id, nome))"
       )
-      .order("data", { ascending: true })
-      .order("hora", { ascending: true });
+      .eq("cliente_id", auth.cliente_id)
+      .order("data", { ascending: false })
+      .order("hora", { ascending: false });
 
-    if (data) query = query.eq("data", data);
     if (status) query = query.eq("status", status);
 
-    const { data: rows, error } = await query;
+    const { data, error } = await query;
     if (error) throw error;
-    return NextResponse.json({ data: rows });
+    return NextResponse.json({ data });
   } catch (error) {
     console.error(error);
-    const statusCode = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json(
-      { error: "Erro ao listar agendamentos" },
-      { status: statusCode }
-    );
+    const status = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
+    return NextResponse.json({ error: "Erro ao listar agendamentos" }, { status });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    requireApiAuth(request);
+    const auth = requireClientAuth(request);
     const body = await request.json();
-    const parsed = agendamentoSchema.safeParse(body);
+    const parsed = clienteAgendamentoSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
+        { error: "Dados invalidos", details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -58,11 +56,11 @@ export async function POST(request: NextRequest) {
           data_vencimento: string | null;
         }
       | null = null;
-    if (usar_assinatura !== false && agendamento.cliente_id && agendamento.data) {
+    if (usar_assinatura !== false && agendamento.data) {
       const { data: assinatura } = await supabase
         .from("assinaturas")
         .select("id, plano_id, data_ultimo_pagamento, data_vencimento")
-        .eq("cliente_id", agendamento.cliente_id)
+        .eq("cliente_id", auth.cliente_id)
         .eq("status", "ATIVA")
         .lte("data_ultimo_pagamento", agendamento.data)
         .gte("data_vencimento", agendamento.data)
@@ -70,6 +68,7 @@ export async function POST(request: NextRequest) {
         .maybeSingle();
       assinaturaAtiva = assinatura ?? null;
     }
+
     const assinaturaServicosMap = new Map<string, number>();
     const assinaturaConsumidosMap = new Map<string, number>();
     const mapValor = new Map<string, number>();
@@ -134,7 +133,11 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("agendamentos")
-      .insert(agendamento)
+      .insert({
+        ...agendamento,
+        cliente_id: auth.cliente_id,
+        status: agendamento.status ?? "AGENDADO",
+      })
       .select()
       .single();
     if (error) throw error;
@@ -171,33 +174,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const statusCode = message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json(
-      { error: "Erro ao criar agendamento" },
-      { status: statusCode }
-    );
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    requireApiAuth(request);
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-    if (!id) return NextResponse.json({ error: "ID obrigatório" }, { status: 400 });
-
-    const supabase = getAdminClient();
-    // remove dependências
-    await supabase.from("agendamento_servicos").delete().eq("agendamento_id", id);
-    await supabase.from("agendamentos").delete().eq("id", id);
-
-    return NextResponse.json({ ok: true });
-  } catch (error) {
-    console.error(error);
-    const statusCode = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json(
-      { error: "Erro ao excluir agendamento" },
-      { status: statusCode }
-    );
+    const status = message === "UNAUTHORIZED" ? 401 : 500;
+    return NextResponse.json({ error: "Erro ao criar agendamento" }, { status });
   }
 }

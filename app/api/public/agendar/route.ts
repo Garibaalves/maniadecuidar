@@ -14,6 +14,7 @@ const publicAgendarSchema = z
         nome: z.string().min(2),
         especie: z.string().default("cachorro"),
         porte: z.enum(["PEQUENO", "MEDIO", "GRANDE"]),
+        temperamento: z.enum(["CALMO", "AGITADO"]).default("CALMO"),
         sexo: z.enum(["MACHO", "FEMEA"]),
       })
       .optional(),
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
           nome: animal.nome,
           especie: animal.especie,
           porte: animal.porte,
+          temperamento: animal.temperamento ?? "CALMO",
           sexo: animal.sexo,
         })
         .select()

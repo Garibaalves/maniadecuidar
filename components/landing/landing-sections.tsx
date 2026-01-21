@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   PawPrint,
   Scissors,
@@ -21,10 +21,8 @@ import {
   Phone,
   Instagram,
   MapPin,
-  Clock3,
   Star,
   Quote,
-  ChevronDown,
   Menu,
   X,
   ArrowUp,
@@ -136,7 +134,7 @@ export function Navbar() {
             </a>
           ))}
           <Button asChild>
-            <a href="#contato">Agendar horário</a>
+            <a href="#contato">Area do cliente</a>
           </Button>
         </nav>
 
@@ -163,7 +161,7 @@ export function Navbar() {
             ))}
             <Button asChild className="w-full">
               <a href="#contato" onClick={() => setOpen(false)}>
-                Agendar horário
+                Area do cliente
               </a>
             </Button>
           </div>
@@ -224,7 +222,7 @@ export function Hero() {
           </motion.ul>
           <motion.div className="flex flex-wrap gap-3" variants={itemFade}>
             <Button asChild>
-              <a href="#contato">Agendar agora</a>
+              <a href="#contato">Area do cliente</a>
             </Button>
             <Button variant="outline" asChild>
               <a href="#servicos">Ver serviços</a>
@@ -562,80 +560,147 @@ export function TestimonialsSection() {
   );
 }
 
+export function LocationSection() {
+  const items = [
+    { label: "Endereco", value: "Conselheiro Lafaiete - MG" },
+    { label: "Horario", value: "Seg a Sab · 08:00 as 18:00" },
+    { label: "WhatsApp", value: "(31) 98316-6010" },
+  ];
+
+  return (
+    <motion.section
+      id="localizacao"
+      className="bg-white py-16 sm:py-20"
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+    >
+      <div className="container grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div className="space-y-4">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-deep/70">
+            Localizacao
+          </p>
+          <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">
+            Estamos perto de voce
+          </h2>
+          <p className="text-base text-foreground/80">
+            Nosso espaco foi pensado para receber voce e seu pet com conforto,
+            seguranca e carinho.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {items.map((item) => (
+              <Card key={item.label} className="border-brand-primary/20 bg-brand-soft/60">
+                <CardContent className="space-y-1 p-4 text-sm text-brand-deep">
+                  <p className="text-xs uppercase tracking-[0.16em] text-brand-deep/70">
+                    {item.label}
+                  </p>
+                  <p className="font-semibold">{item.value}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Button asChild>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Conselheiro%20Lafaiete%20MG"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Abrir no mapa
+            </a>
+          </Button>
+        </div>
+        <Card className="border-brand-primary/25 bg-brand-soft/70 shadow-soft">
+          <CardContent className="p-6">
+            <div className="flex h-72 items-center justify-center rounded-2xl border border-border/70 bg-white/80 text-sm text-foreground/70">
+              Mapa ilustrativo
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </motion.section>
+  );
+}
+
+export function FAQSection() {
+  const faqs = [
+    {
+      q: "Preciso levar o pet com antecedencia?",
+      a: "Recomendamos chegar 10 minutos antes do horario para acomodar o pet com calma.",
+    },
+    {
+      q: "Como funcionam os planos de assinatura?",
+      a: "Os planos incluem quantidades mensais de servicos. Voce acompanha o saldo na area do cliente.",
+    },
+    {
+      q: "Posso remarcar um agendamento?",
+      a: "Sim. Fale conosco pelo WhatsApp e ajustamos o melhor horario.",
+    },
+  ];
+
+  return (
+    <motion.section
+      id="faq"
+      className="bg-brand-soft/60 py-16 sm:py-20"
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+    >
+      <div className="container space-y-6">
+        <div className="text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-deep/70">
+            Duvidas
+          </p>
+          <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">
+            Perguntas frequentes
+          </h2>
+        </div>
+        <motion.div
+          className="grid gap-4 md:grid-cols-3"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {faqs.map((item) => (
+            <motion.div key={item.q} variants={itemFade}>
+              <Card className="border-brand-primary/20 bg-white/90">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">{item.q}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-foreground/70">
+                  {item.a}
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </motion.section>
+  );
+}
+
 export function ContactSection() {
-  type Servico = { id: string; nome: string; valor_padrao: number | null };
-  type Animal = { id: string; nome: string; especie?: string | null; porte?: string | null; sexo?: string | null };
-  type Cliente = { id: string; nome: string; telefone1: string; animais?: Animal[] | null };
-
+  const router = useRouter();
   const [telefone, setTelefone] = useState("");
-  const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [novoClienteNome, setNovoClienteNome] = useState("");
-  const [novoPets, setNovoPets] = useState<
-    { key: string; nome: string; especie: string; porte: "PEQUENO" | "MEDIO" | "GRANDE"; sexo: "MACHO" | "FEMEA" }[]
-  >([{ key: crypto.randomUUID(), nome: "", especie: "cachorro", porte: "PEQUENO", sexo: "MACHO" }]);
-  const [petSelecionado, setPetSelecionado] = useState<string>("");
-  const [servicos, setServicos] = useState<Servico[]>([]);
-  const [servicosSelecionados, setServicosSelecionados] = useState<string[]>([]);
-  const [dataDesejada, setDataDesejada] = useState("");
-  const [horarios, setHorarios] = useState<string[]>([]);
-  const [horaSelecionada, setHoraSelecionada] = useState("");
-  const [observacoes, setObservacoes] = useState("");
-  const [loadingHorarios, setLoadingHorarios] = useState(false);
-  const [loadingBusca, setLoadingBusca] = useState(false);
-  const [enviando, setEnviando] = useState(false);
+  const [cpf, setCpf] = useState("");
+  const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [sucesso, setSucesso] = useState<string | null>(null);
-  const [buscouTelefone, setBuscouTelefone] = useState(false);
-
-  const isNovo = !cliente;
-
-  useEffect(() => {
-    loadServicos();
-  }, []);
-
-  useEffect(() => {
-    if (dataDesejada) {
-      loadHorarios(dataDesejada);
-    }
-  }, [dataDesejada]);
-
-  useEffect(() => {
-    if (isNovo && !petSelecionado && novoPets.length) {
-      setPetSelecionado(novoPets[0].key);
-    }
-  }, [isNovo, novoPets, petSelecionado]);
-
-  const total = useMemo(() => {
-    return servicosSelecionados.reduce((acc, id) => {
-      const svc = servicos.find((s) => s.id === id);
-      return acc + Number(svc?.valor_padrao ?? 0);
-    }, 0);
-  }, [servicosSelecionados, servicos]);
-
-  async function loadServicos() {
-    try {
-      const res = await fetch("/api/public/servicos");
-      const data = await res.json();
-      if (res.ok) setServicos(data.data ?? []);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async function loadHorarios(date: string) {
-    setLoadingHorarios(true);
-    try {
-      const res = await fetch(`/api/public/horarios?data=${date}`);
-      const data = await res.json();
-      if (res.ok) setHorarios(data.slots ?? []);
-      else setHorarios([]);
-    } catch (error) {
-      console.error(error);
-      setHorarios([]);
-    } finally {
-      setLoadingHorarios(false);
-    }
-  }
+  const [mode, setMode] = useState<"login" | "cadastro">("login");
+  const [cadastro, setCadastro] = useState({
+    nome: "",
+    telefone1: "",
+    cpf: "",
+    email: "",
+    pet_nome: "",
+    pet_especie: "Cachorro",
+    pet_porte: "PEQUENO",
+    pet_temperamento: "CALMO",
+    pet_sexo: "MACHO",
+    pet_raca: "",
+  });
+  const [cadastroMsg, setCadastroMsg] = useState<string | null>(null);
 
   const formatPhone = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -646,125 +711,83 @@ export function ContactSection() {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   };
 
-  async function buscarCliente() {
+  const formatCpf = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    const p1 = digits.slice(0, 3);
+    const p2 = digits.slice(3, 6);
+    const p3 = digits.slice(6, 9);
+    const p4 = digits.slice(9, 11);
+    return [p1, p2, p3].filter(Boolean).join(".") + (p4 ? `-${p4}` : "");
+  };
+
+  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setErro(null);
-    setSucesso(null);
-    setCliente(null);
-    setPetSelecionado("");
-    setLoadingBusca(true);
+    setLoading(true);
     try {
-      const clean = telefone.replace(/\D/g, "");
-      const res = await fetch(`/api/public/clientes?telefone=${encodeURIComponent(clean)}`);
+      const res = await fetch("/api/cliente/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telefone: telefone.replace(/\D/g, ""),
+          cpf: cpf.replace(/\D/g, ""),
+        }),
+      });
       const data = await res.json();
-      if (res.ok && data.data) {
-        const found: Cliente = data.data;
-        setCliente(found);
-        setPetSelecionado(found.animais?.[0]?.id ?? "");
-      } else {
-        setCliente(null);
+      if (!res.ok) {
+        setErro(data.error ?? "Erro ao entrar");
+        return;
       }
+      router.push("/cliente");
     } catch (error) {
       console.error(error);
-      setErro("Não foi possível buscar o telefone.");
+      setErro("Erro ao entrar");
     } finally {
-      setLoadingBusca(false);
-      setBuscouTelefone(true);
+      setLoading(false);
     }
   }
 
-  const toggleServico = (id: string) => {
-    setServicosSelecionados((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  };
-
-  const addNovoPet = () => {
-    setNovoPets((prev) => [
-      ...prev,
-      { key: crypto.randomUUID(), nome: "", especie: "cachorro", porte: "PEQUENO", sexo: "MACHO" },
-    ]);
-  };
-
-  const updateNovoPet = (key: string, patch: Partial<(typeof novoPets)[number]>) => {
-    setNovoPets((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)));
-  };
-
-  const removerNovoPet = (key: string) => {
-    setNovoPets((prev) => prev.filter((p) => p.key !== key));
-    if (petSelecionado === key) setPetSelecionado("");
-  };
-
-  async function enviarAgendamento() {
+  async function handleCadastro(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setErro(null);
-    setSucesso(null);
-    const telefoneLimpo = telefone.replace(/\D/g, "");
-    if (!telefoneLimpo) return setErro("Informe o telefone");
-    if (!servicosSelecionados.length) return setErro("Selecione pelo menos um serviço");
-    if (!dataDesejada || !horaSelecionada) return setErro("Escolha data e horário");
-
-    const isNovoPet = isNovo || novoPets.some((p) => p.key === petSelecionado);
-    const petParaEnviar = isNovo
-      ? novoPets.find((p) => p.key === petSelecionado) ?? novoPets[0]
-      : novoPets.find((p) => p.key === petSelecionado);
-
-    if (isNovo && !petParaEnviar?.nome) return setErro("Informe os dados do pet");
-    if (isNovo && !novoClienteNome) return setErro("Informe seu nome");
-
-    const payload: {
-      telefone: string;
-      nome: string;
-      servicos: string[];
-      data: string;
-      hora: string;
-      observacoes?: string;
-      animal_id?: string;
-      animal?: {
-        nome: string;
-        especie: string;
-        porte: "PEQUENO" | "MEDIO" | "GRANDE";
-        sexo: "MACHO" | "FEMEA";
-      };
-    } = {
-      telefone: telefoneLimpo,
-      nome: cliente?.nome ?? novoClienteNome,
-      servicos: servicosSelecionados,
-      data: dataDesejada,
-      hora: horaSelecionada,
-      observacoes,
-    };
-
-    if (!isNovo && petSelecionado && !isNovoPet) {
-      payload.animal_id = petSelecionado;
-    } else if (petParaEnviar) {
-      payload.animal = {
-        nome: petParaEnviar.nome,
-        especie: petParaEnviar.especie,
-        porte: petParaEnviar.porte,
-        sexo: petParaEnviar.sexo,
-      };
-    }
-
-    setEnviando(true);
+    setCadastroMsg(null);
+    setLoading(true);
     try {
-      const res = await fetch("/api/public/agendar", {
+      const payload = {
+        nome: cadastro.nome,
+        telefone1: cadastro.telefone1.replace(/\D/g, ""),
+        cpf: cadastro.cpf.replace(/\D/g, ""),
+        email: cadastro.email,
+        pet: cadastro.pet_nome
+          ? {
+              nome: cadastro.pet_nome,
+              especie: cadastro.pet_especie,
+              porte: cadastro.pet_porte,
+              temperamento: cadastro.pet_temperamento,
+              sexo: cadastro.pet_sexo,
+              raca: cadastro.pet_raca || undefined,
+            }
+          : undefined,
+      };
+      const res = await fetch("/api/public/cadastro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
-        setErro(data.error ?? "Erro ao enviar agendamento");
+        setErro(data.error ?? "Erro ao cadastrar");
         return;
       }
-      setSucesso("Pedido de agendamento enviado! Entraremos em contato para confirmar.");
-      setServicosSelecionados([]);
-      setHoraSelecionada("");
-      setObservacoes("");
+      setCadastroMsg("Cadastro realizado. Agora voce pode entrar.");
+      setMode("login");
+      setTelefone(cadastro.telefone1);
+      setCpf("");
     } catch (error) {
       console.error(error);
-      setErro("Erro ao enviar agendamento");
+      setErro("Erro ao cadastrar");
     } finally {
-      setEnviando(false);
+      setLoading(false);
     }
   }
 
@@ -773,14 +796,13 @@ export function ContactSection() {
       <div className="container grid gap-10 lg:grid-cols-2 lg:items-start">
         <div className="space-y-4">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-deep/70">
-            Agende um horário
+            Area do cliente
           </p>
           <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">
-            Agende o próximo banho do seu pet
+            Acesse sua area de cliente
           </h2>
           <p className="text-base text-foreground/80">
-            Preencha os dados e retornaremos para confirmar o horário. Se preferir, fale direto no
-            WhatsApp.
+            Consulte seus agendamentos, assine planos e gerencie seus pets em um so lugar.
           </p>
           <div className="space-y-2 text-sm text-brand-deep/80">
             <div className="flex items-center gap-2">
@@ -794,305 +816,179 @@ export function ContactSection() {
 
         <Card className="border-brand-primary/20 bg-white shadow-soft">
           <CardContent className="space-y-4 p-6">
-            {erro && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{erro}</div>}
-            {sucesso && <div className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">{sucesso}</div>}
-
-            <div className="space-y-2">
-              <Label>Telefone / WhatsApp</Label>
-              <div className="flex gap-2">
-                    <Input
-                      type="tel"
-                      placeholder="(31) 9 8316-6010"
-                      value={formatPhone(telefone)}
-                      onChange={(e) => setTelefone(e.target.value)}
-                />
-                <Button type="button" onClick={buscarCliente} disabled={loadingBusca}>
-                  {loadingBusca ? "Buscando..." : "Buscar"}
-                </Button>
-              </div>
-              <p className="text-xs text-brand-deep/70">
-                Buscamos seu cadastro para agilizar o agendamento.
-              </p>
-            </div>
-
-            {buscouTelefone && isNovo ? (
-              <div className="space-y-2 rounded-xl border border-border/70 bg-brand-soft/60 p-3">
-                <p className="text-sm font-semibold text-brand-deep">Novo cliente</p>
-                <div className="space-y-2">
-                  <Label>Seu nome</Label>
-                  <Input value={novoClienteNome} onChange={(e) => setNovoClienteNome(e.target.value)} placeholder="Seu nome completo" />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-brand-deep">Cadastre seu pet</p>
-                    <Button type="button" size="sm" variant="outline" onClick={addNovoPet}>
-                      Adicionar pet
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {novoPets.map((pet, idx) => (
-                      <div key={pet.key} className="space-y-2 rounded-xl border border-border/70 p-3">
-                        <div className="flex items-center justify-between text-sm font-semibold text-brand-deep">
-                          Pet {idx + 1}
-                          {novoPets.length > 1 && (
-                            <button onClick={() => removerNovoPet(pet.key)} className="text-xs text-brand-primary">
-                              Remover
-                            </button>
-                          )}
-                        </div>
-                        <Input
-                          placeholder="Nome do pet"
-                          value={pet.nome}
-                          onChange={(e) => updateNovoPet(pet.key, { nome: e.target.value })}
-                        />
-                        <div className="grid gap-2 sm:grid-cols-3">
-                          <select
-                            className="h-10 rounded-lg border border-input bg-white px-3 text-sm text-brand-deep shadow-sm"
-                            value={pet.especie}
-                            onChange={(e) => updateNovoPet(pet.key, { especie: e.target.value })}
-                          >
-                            <option value="cachorro">Cachorro</option>
-                            <option value="gato">Gato</option>
-                            <option value="outro">Outro</option>
-                          </select>
-                          <select
-                            className="h-10 rounded-lg border border-input bg-white px-3 text-sm text-brand-deep shadow-sm"
-                            value={pet.porte}
-                            onChange={(e) =>
-                              updateNovoPet(pet.key, {
-                                porte: e.target.value as "PEQUENO" | "MEDIO" | "GRANDE",
-                              })
-                            }
-                          >
-                            <option value="PEQUENO">Pequeno</option>
-                            <option value="MEDIO">Médio</option>
-                            <option value="GRANDE">Grande</option>
-                          </select>
-                          <select
-                            className="h-10 rounded-lg border border-input bg-white px-3 text-sm text-brand-deep shadow-sm"
-                            value={pet.sexo}
-                            onChange={(e) =>
-                              updateNovoPet(pet.key, {
-                                sexo: e.target.value as "MACHO" | "FEMEA",
-                              })
-                            }
-                          >
-                            <option value="MACHO">Macho</option>
-                            <option value="FEMEA">Fêmea</option>
-                          </select>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-brand-deep">
-                          <input
-                            type="radio"
-                            name="pet-selecionado"
-                            checked={petSelecionado ? petSelecionado === pet.key : idx === 0}
-                            onChange={() => setPetSelecionado(pet.key)}
-                          />
-                          Selecionar para este agendamento
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : !isNovo ? (
-              <div className="space-y-3 rounded-xl border border-border/70 bg-brand-soft/60 p-3">
-                <div className="text-sm text-brand-deep">
-                  <p className="font-semibold">{cliente?.nome}</p>
-                  <p className="text-brand-deep/70">Telefone confirmado. Selecione o pet:</p>
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {(cliente?.animais ?? []).map((pet) => (
-                    <button
-                      key={pet.id}
-                      className={`rounded-lg border px-3 py-2 text-left text-sm transition ${
-                        petSelecionado === pet.id
-                          ? "border-brand-primary bg-brand-primary/10 text-brand-deep"
-                          : "border-border/70 bg-white"
-                      }`}
-                      onClick={() => setPetSelecionado(pet.id)}
-                    >
-                      <p className="font-semibold">{pet.nome}</p>
-                      <p className="text-xs text-brand-deep/70">{pet.especie ?? "Pet"}</p>
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 text-xs text-brand-deep/80">
-                  Se precisar cadastrar um novo pet, refaça a busca com o telefone após cadastrar conosco.
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-border/70 bg-brand-soft/60 px-3 py-2 text-sm text-brand-deep/80">
-                Informe o telefone e clique em buscar para continuar.
+            {erro && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {erro}
               </div>
             )}
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Dia desejado</Label>
-                <Input type="date" value={dataDesejada} onChange={(e) => setDataDesejada(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Horário desejado</Label>
-                <select
-                  className="h-10 w-full rounded-lg border border-input bg-white px-3 text-sm text-brand-deep shadow-sm"
-                  value={horaSelecionada}
-                  onChange={(e) => setHoraSelecionada(e.target.value)}
-                >
-                  <option value="">{loadingHorarios ? "Carregando..." : "Selecione"}</option>
-                  {horarios.map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={mode === "login" ? "default" : "outline"}
+                onClick={() => setMode("login")}
+              >
+                Entrar
+              </Button>
+              <Button
+                type="button"
+                variant={mode === "cadastro" ? "default" : "outline"}
+                onClick={() => setMode("cadastro")}
+              >
+                Cadastrar
+              </Button>
             </div>
 
-            <div className="space-y-2">
-              <Label>Serviços desejados</Label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {servicos.map((svc) => (
-                  <label
-                    key={svc.id}
-                    className={`flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2 text-sm transition ${
-                      servicosSelecionados.includes(svc.id)
-                        ? "border-brand-primary bg-brand-primary/10"
-                        : "border-border/70 bg-white"
-                    }`}
-                  >
-                    <div>
-                      <p className="font-semibold text-brand-deep">{svc.nome}</p>
-                      <p className="text-xs text-brand-deep/70">
-                        {svc.valor_padrao ? `R$ ${Number(svc.valor_padrao).toFixed(2)}` : "Sob consulta"}
-                      </p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={servicosSelecionados.includes(svc.id)}
-                      onChange={() => toggleServico(svc.id)}
+            {mode === "login" ? (
+              <form className="space-y-4" onSubmit={handleLogin}>
+                {cadastroMsg && (
+                  <div className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+                    {cadastroMsg}
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label>Telefone</Label>
+                  <Input
+                    type="tel"
+                    placeholder="(31) 9 8316-6010"
+                    value={formatPhone(telefone)}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>CPF</Label>
+                  <Input
+                    placeholder="000.000.000-00"
+                    value={formatCpf(cpf)}
+                    onChange={(e) => setCpf(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Entrando..." : "Entrar na area do cliente"}
+                </Button>
+              </form>
+            ) : (
+              <form className="space-y-4" onSubmit={handleCadastro}>
+                <div className="space-y-2">
+                  <Label>Nome</Label>
+                  <Input
+                    value={cadastro.nome}
+                    onChange={(e) => setCadastro((c) => ({ ...c, nome: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Telefone</Label>
+                  <Input
+                    type="tel"
+                    placeholder="(31) 9 8316-6010"
+                    value={formatPhone(cadastro.telefone1)}
+                    onChange={(e) => setCadastro((c) => ({ ...c, telefone1: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>CPF</Label>
+                    <Input
+                      placeholder="000.000.000-00"
+                      value={formatCpf(cadastro.cpf)}
+                      onChange={(e) => setCadastro((c) => ({ ...c, cpf: e.target.value }))}
+                      required
                     />
-                  </label>
-                ))}
-              </div>
-              <div className="rounded-xl border border-brand-primary/30 bg-brand-primary/5 px-3 py-2 text-sm font-semibold text-brand-deep">
-                Total estimado: R$ {total.toFixed(2)}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Mensagem / observações</Label>
-              <Textarea
-                placeholder="Conte sobre o pet ou alguma necessidade especial"
-                value={observacoes}
-                onChange={(e) => setObservacoes(e.target.value)}
-              />
-            </div>
-            <Button className="w-full" type="button" onClick={enviarAgendamento} disabled={enviando}>
-              {enviando ? "Enviando..." : "Enviar pedido de agendamento"}
-            </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={cadastro.email}
+                      onChange={(e) => setCadastro((c) => ({ ...c, email: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-brand-soft/50 px-3 py-3">
+                  <p className="text-sm font-semibold text-brand-deep">Dados do pet (opcional)</p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Nome do pet</Label>
+                      <Input
+                        value={cadastro.pet_nome}
+                        onChange={(e) => setCadastro((c) => ({ ...c, pet_nome: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Raca</Label>
+                      <Input
+                        value={cadastro.pet_raca}
+                        onChange={(e) => setCadastro((c) => ({ ...c, pet_raca: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-2 grid gap-2 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Especie</Label>
+                      <select
+                        className="h-10 w-full rounded-lg border border-input bg-white px-3 text-sm text-brand-deep shadow-sm"
+                        value={cadastro.pet_especie}
+                        onChange={(e) => setCadastro((c) => ({ ...c, pet_especie: e.target.value }))}
+                      >
+                        <option value="Cachorro">Cachorro</option>
+                        <option value="Gato">Gato</option>
+                        <option value="Outro">Outro</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Porte</Label>
+                      <select
+                        className="h-10 w-full rounded-lg border border-input bg-white px-3 text-sm text-brand-deep shadow-sm"
+                        value={cadastro.pet_porte}
+                        onChange={(e) => setCadastro((c) => ({ ...c, pet_porte: e.target.value }))}
+                      >
+                        <option value="PEQUENO">Pequeno</option>
+                        <option value="MEDIO">Medio</option>
+                        <option value="GRANDE">Grande</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-2 grid gap-2 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Temperamento</Label>
+                      <select
+                        className="h-10 w-full rounded-lg border border-input bg-white px-3 text-sm text-brand-deep shadow-sm"
+                        value={cadastro.pet_temperamento}
+                        onChange={(e) =>
+                          setCadastro((c) => ({ ...c, pet_temperamento: e.target.value }))
+                        }
+                      >
+                        <option value="CALMO">Calmo</option>
+                        <option value="AGITADO">Agitado</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Sexo</Label>
+                      <select
+                        className="h-10 w-full rounded-lg border border-input bg-white px-3 text-sm text-brand-deep shadow-sm"
+                        value={cadastro.pet_sexo}
+                        onChange={(e) => setCadastro((c) => ({ ...c, pet_sexo: e.target.value }))}
+                      >
+                        <option value="MACHO">Macho</option>
+                        <option value="FEMEA">Femea</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Cadastrando..." : "Cadastrar cliente"}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>
     </section>
   );
 }
-
-export function LocationSection() {
-  return (
-    <section id="localizacao" className="bg-white py-16 sm:py-20">
-      <div className="container grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-deep/70">
-            Localização
-          </p>
-          <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">Onde estamos</h2>
-          <p className="text-base text-foreground/80">
-            Rua Antonio Aureliano de Rezende, 1955 - Oscar Correia, Conselheiro Lafaiete - MG
-          </p>
-          <div className="flex items-center gap-2 text-sm text-brand-deep/80">
-            <MapPin className="h-4 w-4 text-brand-primary" /> Fácil acesso, estacionamento próximo.
-          </div>
-          <div className="flex items-center gap-2 text-sm text-brand-deep/80">
-            <Clock3 className="h-4 w-4 text-brand-primary" /> Seg - Sex: 9h às 18h · Sáb: 9h às 14h
-          </div>
-          <div className="grid gap-2 rounded-2xl border border-border/70 bg-brand-soft/60 p-4 text-sm text-brand-deep">
-            <div className="flex items-center justify-between">
-              <span>Seg - Sex</span>
-              <span>09h às 18h</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Sábado</span>
-              <span>09h às 14h</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Domingos e feriados</span>
-              <span>Consultar disponibilidade</span>
-            </div>
-          </div>
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-border/70 bg-brand-soft/60 shadow-soft">
-          <div className="h-[320px] w-full">
-            <iframe
-              title="Mapa Mania de Cuidar"
-              src="https://www.google.com/maps?q=Rua+Antonio+Aureliano+de+Rezende,+1955,+Conselheiro+Lafaiete,+MG&z=17&output=embed&iwloc=0&hl=pt-BR"
-              width="100%"
-              height="100%"
-              loading="lazy"
-              className="h-full w-full"
-              style={{ border: 0 }}
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function FAQSection() {
-  const faqs = [
-    {
-      q: "Como funciona o agendamento?",
-      a: "Você pode enviar pelo formulário, WhatsApp ou telefone. Confirmamos horário conforme agenda disponível.",
-    },
-    {
-      q: "Quais cuidados com animais idosos?",
-      a: "Adaptamos o tempo e os produtos, priorizando conforto e segurança com monitoramento constante.",
-    },
-    { q: "Posso acompanhar o banho?", a: "Sim, temos área de espera e janela para acompanhamento seguro." },
-    {
-      q: "E se meu pet tiver medo de banho?",
-      a: "Nossa equipe é treinada para conduzir de forma acolhedora, com pausas e mimos para reduzir o estresse.",
-    },
-  ];
-
-  return (
-    <section className="bg-brand-soft/60 py-16 sm:py-20">
-      <div className="container space-y-6">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-deep/70">FAQ</p>
-          <h2 className="font-display text-3xl text-brand-deep sm:text-4xl">Perguntas frequentes</h2>
-        </div>
-        <div className="space-y-3">
-          {faqs.map((item) => (
-            <details
-              key={item.q}
-              className="group rounded-2xl border border-border/70 bg-white/80 px-4 py-3 text-brand-deep shadow-soft"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold">
-                {item.q}
-                <ChevronDown className="h-4 w-4 text-brand-primary transition group-open:rotate-180" />
-              </summary>
-              <p className="mt-2 text-sm text-foreground/80">{item.a}</p>
-            </details>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function Footer() {
   return (
     <footer className="bg-brand-deep text-white">
@@ -1160,3 +1056,4 @@ export function FloatingButtons() {
     </>
   );
 }
+

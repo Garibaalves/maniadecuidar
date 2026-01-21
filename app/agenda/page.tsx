@@ -17,7 +17,7 @@ import { Select } from "@/components/ui/select";
 import { formatDate } from "@/lib/utils";
 import { Animal, Cliente, Servico } from "@/types";
 import { CalendarClock, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type AgendamentoRow = {
   id: string;
@@ -30,12 +30,30 @@ type AgendamentoRow = {
   observacoes?: string | null;
 };
 
+type AssinaturaConsumo = {
+  assinatura: {
+    id: string;
+    plano_id: string;
+    plano_nome: string;
+    data_ultimo_pagamento: string;
+    data_vencimento: string;
+  };
+  servicos: {
+    servico_id: string;
+    nome: string;
+    quantidade: number;
+    consumidos: number;
+    restantes: number;
+  }[];
+};
+
 type FormState = {
   cliente_id?: string;
   animal_id?: string;
   servicos: { servico_id: string; valor?: number }[];
   hora?: string;
   observacoes?: string;
+  usar_assinatura?: boolean;
 };
 
 const initialFormState: FormState = {
@@ -55,6 +73,9 @@ export default function AgendaPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [assinaturaInfo, setAssinaturaInfo] = useState<AssinaturaConsumo | null>(null);
+  const [assinaturaLoading, setAssinaturaLoading] = useState(false);
+  const [assinaturaError, setAssinaturaError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(initialFormState);
   const [openModal, setOpenModal] = useState(false);
 
@@ -70,37 +91,23 @@ export default function AgendaPage() {
 
   const agendamentosFiltrados = useMemo(() => agendamentos, [agendamentos]);
   const hojeFormatado = useMemo(() => formatDate(dataSelecionada), [dataSelecionada]);
-
-  useEffect(() => {
-    loadAgendamentos();
-    loadClientes();
-    loadServicos();
-    loadHorarios(dataSelecionada);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (dataSelecionada) {
-      loadAgendamentos();
-      loadHorarios();
+  const usarAssinatura = form.usar_assinatura === true && !!assinaturaInfo;
+  const servicosDisponiveis = useMemo(() => {
+    if (usarAssinatura && assinaturaInfo) {
+      return assinaturaInfo.servicos.map((s) => ({
+        id: s.servico_id,
+        nome: s.nome,
+        restantes: s.restantes,
+        quantidade: s.quantidade,
+      }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataSelecionada, statusFiltro]);
+    return servicos.map((s) => ({
+      id: s.id,
+      nome: s.nome,
+    }));
+  }, [assinaturaInfo, servicos, usarAssinatura]);
 
-  useEffect(() => {
-    if (form.cliente_id) {
-      loadAnimais(form.cliente_id);
-    } else {
-      setAnimais([]);
-      setForm((f) => ({ ...f, animal_id: undefined }));
-    }
-  }, [form.cliente_id]);
-
-  const resetForm = () => {
-    setForm(initialFormState);
-  };
-
-  async function loadAgendamentos() {
+  const loadAgendamentos = useCallback(async () => {
     setLoading(true);
     setActionError(null);
     try {
@@ -120,7 +127,59 @@ export default function AgendaPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [dataSelecionada, statusFiltro]);
+
+  const loadHorarios = useCallback(async (dateOverride?: string) => {
+    try {
+      const targetDate = dateOverride ?? dataSelecionada;
+      if (!targetDate) return;
+      const res = await fetch(`/api/public/horarios?data=${targetDate}`);
+      const data = await res.json();
+      setHorariosDisponiveis(data.slots ?? []);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [dataSelecionada]);
+
+  useEffect(() => {
+    loadClientes();
+    loadServicos();
+  }, []);
+
+  useEffect(() => {
+    if (dataSelecionada) {
+      loadAgendamentos();
+      loadHorarios();
+    }
+  }, [dataSelecionada, loadAgendamentos, loadHorarios, statusFiltro]);
+
+  useEffect(() => {
+    if (form.cliente_id) {
+      loadAnimais(form.cliente_id);
+    } else {
+      setAnimais([]);
+      setForm((f) => ({ ...f, animal_id: undefined }));
+      setAssinaturaInfo(null);
+    }
+  }, [form.cliente_id]);
+
+  useEffect(() => {
+    if (form.cliente_id && dataSelecionada) {
+      loadAssinaturaConsumo(form.cliente_id, dataSelecionada);
+    }
+  }, [dataSelecionada, form.cliente_id]);
+
+  useEffect(() => {
+    if (assinaturaInfo) {
+      setForm((f) => (f.usar_assinatura === undefined ? { ...f, usar_assinatura: true } : f));
+    } else {
+      setForm((f) => (f.usar_assinatura ? { ...f, usar_assinatura: false } : f));
+    }
+  }, [assinaturaInfo]);
+
+  const resetForm = () => {
+    setForm(initialFormState);
+  };
 
   async function loadClientes() {
     try {
@@ -152,15 +211,25 @@ export default function AgendaPage() {
     }
   }
 
-  async function loadHorarios(dateOverride?: string) {
+  async function loadAssinaturaConsumo(cliente_id: string, data: string) {
+    setAssinaturaLoading(true);
+    setAssinaturaError(null);
     try {
-      const targetDate = dateOverride ?? dataSelecionada;
-      if (!targetDate) return;
-      const res = await fetch(`/api/public/horarios?data=${targetDate}`);
-      const data = await res.json();
-      setHorariosDisponiveis(data.slots ?? []);
+      const params = new URLSearchParams({ cliente_id, data });
+      const res = await fetch(`/api/assinaturas/consumo?${params.toString()}`);
+      const payload = await res.json();
+      if (!res.ok) {
+        setAssinaturaError(payload.error ?? "Erro ao carregar assinatura");
+        setAssinaturaInfo(null);
+        return;
+      }
+      setAssinaturaInfo(payload.data ?? null);
     } catch (err) {
       console.error(err);
+      setAssinaturaError("Erro ao carregar assinatura");
+      setAssinaturaInfo(null);
+    } finally {
+      setAssinaturaLoading(false);
     }
   }
 
@@ -185,8 +254,9 @@ export default function AgendaPage() {
           observacoes: form.observacoes,
           servicos: form.servicos.length
             ? form.servicos
-            : servicos.slice(0, 1).map((s) => ({ servico_id: s.id })),
+            : servicosDisponiveis.slice(0, 1).map((s) => ({ servico_id: s.id })),
           valor_total: valorTotal,
+          usar_assinatura: form.usar_assinatura,
         }),
       });
       const data = await res.json();
@@ -416,6 +486,58 @@ export default function AgendaPage() {
                 ))}
               </Select>
             </div>
+            {form.cliente_id && (
+              <div className="rounded-xl border border-border/70 bg-white/90 px-4 py-3 text-sm">
+                {assinaturaLoading && (
+                  <div className="text-foreground/70">Carregando assinatura...</div>
+                )}
+                {!assinaturaLoading && assinaturaError && (
+                  <div className="text-red-600">{assinaturaError}</div>
+                )}
+                {!assinaturaLoading && !assinaturaError && !assinaturaInfo && (
+                  <div className="text-foreground/70">Cliente sem assinatura ativa.</div>
+                )}
+                {!assinaturaLoading && assinaturaInfo && (
+                  <div className="space-y-2">
+                    <div className="font-semibold text-brand-deep">
+                      Assinatura ativa: {assinaturaInfo.assinatura.plano_nome}
+                    </div>
+                    <div className="text-xs text-foreground/70">
+                      Periodo: {assinaturaInfo.assinatura.data_ultimo_pagamento} ate{" "}
+                      {assinaturaInfo.assinatura.data_vencimento}
+                    </div>
+                    <div className="space-y-1 text-xs text-foreground/70">
+                      {assinaturaInfo.servicos.map((s) => (
+                        <div key={s.servico_id}>
+                          {s.nome}: {s.restantes} restantes de {s.quantidade}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Usar assinatura?</Label>
+                      <Select
+                        value={form.usar_assinatura ? "SIM" : "NAO"}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            usar_assinatura: e.target.value === "SIM",
+                            servicos: [],
+                          }))
+                        }
+                      >
+                        <option value="SIM">Sim, usar pacote</option>
+                        <option value="NAO">Nao, cobrar a parte</option>
+                      </Select>
+                      {!form.usar_assinatura && (
+                        <div className="text-xs text-foreground/70">
+                          Servicos serao cobrados fora do pacote.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Servicos</Label>
               <div className="space-y-2">
@@ -434,11 +556,23 @@ export default function AgendaPage() {
                       className="flex-1"
                     >
                       <option value="">Selecione</option>
-                      {servicos.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.nome}
-                        </option>
-                      ))}
+                      {servicosDisponiveis.map((s) => {
+                        const restantes = "restantes" in s ? s.restantes : undefined;
+                        const quantidade = "quantidade" in s ? s.quantidade : undefined;
+                        const label =
+                          restantes != null
+                            ? `${s.nome} (${restantes} de ${quantidade} restantes)`
+                            : s.nome;
+                        return (
+                          <option
+                            key={s.id}
+                            value={s.id}
+                            disabled={restantes === 0}
+                          >
+                            {label}
+                          </option>
+                        );
+                      })}
                     </Select>
                     <Input
                       type="number"

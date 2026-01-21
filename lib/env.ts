@@ -5,7 +5,10 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   SUPABASE_JWT_SECRET: z.string().min(1),
   AUTH_COOKIE_NAME: z.string().default("mdc.session"),
+  CLIENT_AUTH_COOKIE_NAME: z.string().default("mdc.cliente"),
   APP_URL: z.string().url().optional(),
+  ABACATEPAY_API_KEY: z.string().min(1),
+  ABACATEPAY_BASE_URL: z.string().url().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

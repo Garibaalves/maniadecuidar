@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -51,66 +51,40 @@ export default function DashboardPage() {
     return toLocalISODate(last);
   }, []);
 
-  useEffect(() => {
-    loadAgendamentos();
-    loadCaixaDia();
-    loadCaixaMes();
-  }, []);
-
-  const proximos = useMemo(() => {
-    return agendamentos
-      .filter((a) => a.status !== "CONCLUIDO" && a.status !== "CANCELADO")
-      .slice(0, 5);
-  }, [agendamentos]);
-
-  const resumo = useMemo(
-    () => [
-      {
-        title: "Agendamentos hoje",
-        value: agendamentos.length,
-        icon: <CalendarClock className="h-5 w-5" />,
-      },
-      {
-        title: "Atendimentos em curso",
-        value: agendamentos.filter((a) => a.status === "EM_ATENDIMENTO").length,
-        icon: <PawPrint className="h-5 w-5" />,
-      },
-      {
-        title: "Saldo do dia",
-        value: formatCurrency(caixaDia.entradas - caixaDia.saidas),
-        icon: <Wallet className="h-5 w-5" />,
-      },
-    ],
-    [agendamentos, caixaDia]
-  );
-
-  async function loadAgendamentos() {
-    setError(null);
+  const loadAgendamentos = useCallback(async () => {
     try {
       const res = await fetch(`/api/agendamentos?data=${hojeIso}`);
       const data = await res.json();
-      if (res.ok) setAgendamentos(data.data ?? []);
-      else setError(data.error ?? "Erro ao carregar agendamentos");
+      if (res.ok) {
+        setAgendamentos(data.data ?? []);
+        setError(null);
+      } else {
+        setError(data.error ?? "Erro ao carregar agendamentos");
+      }
     } catch (err) {
       console.error(err);
       setError("Erro ao carregar agendamentos");
     }
-  }
+  }, [hojeIso]);
 
-  async function loadCaixaDia() {
+  const loadCaixaDia = useCallback(async () => {
     try {
       const res = await fetch(`/api/caixa?inicio=${hojeIso}&fim=${hojeIso}`);
       const data = await res.json();
       if (!res.ok) return;
-      const entradas = (data.data ?? []).filter((m: CaixaMovimento) => m.tipo === "ENTRADA").reduce((acc: number, m: CaixaMovimento) => acc + Number(m.valor ?? 0), 0);
-      const saidas = (data.data ?? []).filter((m: CaixaMovimento) => m.tipo === "SAIDA").reduce((acc: number, m: CaixaMovimento) => acc + Number(m.valor ?? 0), 0);
+      const entradas = (data.data ?? [])
+        .filter((m: CaixaMovimento) => m.tipo === "ENTRADA")
+        .reduce((acc: number, m: CaixaMovimento) => acc + Number(m.valor ?? 0), 0);
+      const saidas = (data.data ?? [])
+        .filter((m: CaixaMovimento) => m.tipo === "SAIDA")
+        .reduce((acc: number, m: CaixaMovimento) => acc + Number(m.valor ?? 0), 0);
       setCaixaDia({ entradas, saidas });
     } catch (err) {
       console.error(err);
     }
-  }
+  }, [hojeIso]);
 
-  async function loadCaixaMes() {
+  const loadCaixaMes = useCallback(async () => {
     try {
       const [movRes, fixRes, despRes] = await Promise.all([
         fetch(`/api/caixa?inicio=${inicioMes}&fim=${fimMes}`),
@@ -149,7 +123,43 @@ export default function DashboardPage() {
     } catch (err) {
       console.error(err);
     }
-  }
+  }, [fimMes, inicioMes]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadAgendamentos();
+      void loadCaixaDia();
+      void loadCaixaMes();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [loadAgendamentos, loadCaixaDia, loadCaixaMes]);
+
+  const proximos = useMemo(() => {
+    return agendamentos
+      .filter((a) => a.status !== "CONCLUIDO" && a.status !== "CANCELADO")
+      .slice(0, 5);
+  }, [agendamentos]);
+
+  const resumo = useMemo(
+    () => [
+      {
+        title: "Agendamentos hoje",
+        value: agendamentos.length,
+        icon: <CalendarClock className="h-5 w-5" />,
+      },
+      {
+        title: "Atendimentos em curso",
+        value: agendamentos.filter((a) => a.status === "EM_ATENDIMENTO").length,
+        icon: <PawPrint className="h-5 w-5" />,
+      },
+      {
+        title: "Saldo do dia",
+        value: formatCurrency(caixaDia.entradas - caixaDia.saidas),
+        icon: <Wallet className="h-5 w-5" />,
+      },
+    ],
+    [agendamentos, caixaDia]
+  );
 
   return (
     <AppShell>

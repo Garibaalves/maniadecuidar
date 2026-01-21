@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
     if (error) throw error;
+
     return NextResponse.json({ data });
   } catch (error) {
     console.error(error);
@@ -73,6 +74,7 @@ export async function PATCH(request: NextRequest) {
       .select()
       .single();
     if (error) throw error;
+
     return NextResponse.json({ data: updated });
   } catch (error) {
     console.error(error);
@@ -92,6 +94,7 @@ export async function DELETE(request: NextRequest) {
     const supabase = getAdminClient();
     const { error } = await supabase.from("produtos").delete().eq("id", id);
     if (error) throw error;
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

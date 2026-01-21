@@ -24,6 +24,7 @@ export type Cliente = {
   estado?: string | null;
   cep?: string | null;
   observacoes?: string | null;
+  abacatepay_customer_id?: string | null;
 };
 
 export type Animal = {
@@ -33,6 +34,7 @@ export type Animal = {
   especie: string;
   raca?: string | null;
   porte: "PEQUENO" | "MEDIO" | "GRANDE";
+  temperamento: "CALMO" | "AGITADO";
   sexo: "MACHO" | "FEMEA";
   data_nascimento?: string | null;
   observacoes?: string | null;
@@ -78,3 +80,41 @@ export type Agendamento = {
 };
 
 export type CaixaFormaPagamento = "PIX" | "DINHEIRO" | "DEBITO" | "CREDITO" | "OUTROS";
+
+export type PlanoServico = {
+  servico_id: string;
+  quantidade: number;
+  servicos?: {
+    id: string;
+    nome: string;
+    valor_padrao?: number | null;
+  } | null;
+};
+
+export type Plano = {
+  id: string;
+  nome: string;
+  descricao?: string | null;
+  intervalo_dias: number;
+  valor: number;
+  ativo: boolean;
+  plano_servicos?: PlanoServico[];
+};
+
+export type AssinaturaStatus = "PENDENTE" | "ATIVA" | "CANCELADA" | "ATRASADA";
+
+export type Assinatura = {
+  id: string;
+  plano_id: string;
+  cliente_id: string;
+  status: AssinaturaStatus;
+  data_adesao?: string | null;
+  data_ultimo_pagamento?: string | null;
+  data_vencimento?: string | null;
+  stripe_subscription_id?: string | null;
+  stripe_customer_id?: string | null;
+  stripe_checkout_url?: string | null;
+  abacatepay_billing_id?: string | null;
+  planos?: Plano | null;
+  clientes?: { id: string; nome: string; telefone1?: string | null } | null;
+};

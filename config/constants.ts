@@ -3,12 +3,14 @@ export const navItems = [
   { href: "/clientes", label: "Clientes", icon: "users" },
   { href: "/animais", label: "Animais", icon: "paw-print" },
   { href: "/servicos", label: "Servicos", icon: "sparkles" },
+  { href: "/planos", label: "Planos", icon: "repeat" },
   { href: "/produtos", label: "Produtos", icon: "package" },
   { href: "/atendimentos", label: "Atendimentos", icon: "stethoscope" },
   { href: "/agenda", label: "Agenda", icon: "calendar-clock" },
   { href: "/caixa", label: "Caixa", icon: "wallet-cards" },
   { href: "/estoque", label: "Estoque", icon: "package" },
   { href: "/despesas", label: "Despesas", icon: "receipt" },
+  { href: "/assinaturas", label: "Assinaturas", icon: "link" },
 ];
 
 export const agendamentoStatus = [

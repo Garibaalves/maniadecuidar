@@ -31,6 +31,7 @@ export const animalSchema = z.object({
   especie: z.string(),
   raca: z.string().optional(),
   porte: z.enum(["PEQUENO", "MEDIO", "GRANDE"]),
+  temperamento: z.enum(["CALMO", "AGITADO"]),
   sexo: z.enum(["MACHO", "FEMEA"]),
   data_nascimento: z.string().optional(),
   observacoes: z.string().optional(),
@@ -98,6 +99,7 @@ export const agendamentoSchema = z.object({
     "NAO_COMPARECEU",
   ]),
   observacoes: z.string().optional(),
+  usar_assinatura: z.boolean().optional(),
   servicos: z.array(
     z.object({
       servico_id: z.string().uuid(),
@@ -145,4 +147,37 @@ export const contaFixaSchema = z.object({
   valor_mensal: z.number().positive(),
   dia_vencimento: z.number().min(1).max(31),
   ativo: z.boolean().default(true),
+});
+
+export const planoServicoSchema = z.object({
+  servico_id: z.string().uuid(),
+  quantidade: z.number().int().positive().default(1),
+});
+
+export const planoSchema = z.object({
+  nome: z.string().min(2),
+  descricao: z.string().optional(),
+  intervalo_dias: z.number().int().positive(),
+  valor: z.number().nonnegative(),
+  ativo: z.boolean().default(true),
+  servicos: z.array(planoServicoSchema).default([]),
+});
+
+export const planoUpdateSchema = planoSchema.extend({
+  id: z.string().uuid(),
+});
+
+export const assinaturaSchema = z.object({
+  plano_id: z.string().uuid(),
+  cliente_id: z.string().uuid(),
+  data_adesao: z.string().optional(),
+  data_vencimento: z.string().optional(),
+});
+
+export const assinaturaUpdateSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(["PENDENTE", "ATIVA", "CANCELADA", "ATRASADA"]).optional(),
+  data_ultimo_pagamento: z.string().optional(),
+  data_vencimento: z.string().optional(),
+  forma_pagamento: z.enum(["PIX", "DINHEIRO", "DEBITO", "CREDITO", "OUTROS"]).optional(),
 });

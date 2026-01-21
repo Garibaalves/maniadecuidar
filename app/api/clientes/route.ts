@@ -1,7 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
 import { clienteSchema, clienteUpdateSchema } from "@/lib/validations";
 import { requireApiAuth } from "@/lib/api";
+import { ensureAbacatePayCustomerId } from "@/lib/abacatepay";
+
+const ABACATEPAY_MISSING_DATA = "ABACATEPAY_MISSING_DATA";
+
+function buildAbacatePayCustomerPayload(input: {
+  nome: string;
+  telefone1: string;
+  email?: string | null;
+  cpf?: string | null;
+}) {
+  if (!input.email || !input.cpf || !input.telefone1) {
+    throw new Error(ABACATEPAY_MISSING_DATA);
+  }
+
+  return {
+    name: input.nome,
+    cellphone: input.telefone1,
+    email: input.email,
+    taxId: input.cpf,
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,21 +63,32 @@ export async function POST(request: NextRequest) {
     const parsed = clienteSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
+        { error: "Dados invalidos", details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
+    const abacatepayCustomer = buildAbacatePayCustomerPayload(parsed.data);
+    const { id: abacatepayCustomerId } = await ensureAbacatePayCustomerId({
+      customer: abacatepayCustomer,
+    });
     const supabase = getAdminClient();
     const { data, error } = await supabase
       .from("clientes")
-      .insert(parsed.data)
+      .insert({ ...parsed.data, abacatepay_customer_id: abacatepayCustomerId })
       .select()
       .single();
     if (error) throw error;
     return NextResponse.json({ data });
   } catch (error) {
     console.error(error);
-    const status = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
+    const message = (error as Error).message;
+    if (message === ABACATEPAY_MISSING_DATA) {
+      return NextResponse.json(
+        { error: "Informe email, CPF e telefone para criar cliente no AbacatePay" },
+        { status: 400 }
+      );
+    }
+    const status = message === "UNAUTHORIZED" ? 401 : 500;
     return NextResponse.json({ error: "Erro ao criar cliente" }, { status });
   }
 }
@@ -68,7 +100,7 @@ export async function PATCH(request: NextRequest) {
     const parsed = clienteUpdateSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
+        { error: "Dados invalidos", details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
@@ -81,10 +113,32 @@ export async function PATCH(request: NextRequest) {
       .select()
       .single();
     if (error) throw error;
-    return NextResponse.json({ data: updated });
+    let current = updated;
+    if (!current.abacatepay_customer_id) {
+      const abacatepayCustomer = buildAbacatePayCustomerPayload(current);
+      const { id: abacatepayCustomerId } = await ensureAbacatePayCustomerId({
+        customer: abacatepayCustomer,
+      });
+      const { data: synced, error: syncError } = await supabase
+        .from("clientes")
+        .update({ abacatepay_customer_id: abacatepayCustomerId })
+        .eq("id", id)
+        .select()
+        .single();
+      if (syncError) throw syncError;
+      current = synced;
+    }
+    return NextResponse.json({ data: current });
   } catch (error) {
     console.error(error);
-    const status = (error as Error).message === "UNAUTHORIZED" ? 401 : 500;
+    const message = (error as Error).message;
+    if (message === ABACATEPAY_MISSING_DATA) {
+      return NextResponse.json(
+        { error: "Informe email, CPF e telefone para criar cliente no AbacatePay" },
+        { status: 400 }
+      );
+    }
+    const status = message === "UNAUTHORIZED" ? 401 : 500;
     return NextResponse.json({ error: "Erro ao atualizar cliente" }, { status });
   }
 }
