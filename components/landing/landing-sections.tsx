@@ -809,7 +809,7 @@ export function ContactSection() {
               <Phone className="h-4 w-4 text-brand-primary" /> (31) 98316-6010
             </div>
             <div className="flex items-center gap-2">
-              <Instagram className="h-4 w-4 text-brand-primary" /> @maniadecuidar.pet
+              <Instagram className="h-4 w-4 text-brand-primary" /> @mania_de_cuidar
             </div>
           </div>
         </div>
@@ -1040,7 +1040,7 @@ export function FloatingButtons() {
   return (
     <>
       <a
-        href="https://wa.me/5531999999999"
+        href="https://wa.me/5531983166010"
         target="_blank"
         rel="noreferrer"
         className="fixed bottom-6 right-6 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand-primary text-white shadow-soft transition hover:scale-105"
